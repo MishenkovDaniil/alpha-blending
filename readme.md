@@ -22,15 +22,15 @@ Every version follows the next structure:
 
 ### Naive version
 
-Naive version ([naive version link](/alpha_blending_0.cpp)) works with sfml structure Image, addressing to it every time we need to get or set pixel and its color. That's why it is the slowest version, but the one where we can see alpha blending implementation most vividly.
+Naive version ([naive version link](/implementation_versions/alpha_blending_0.cpp)) works with sfml structure Image, addressing to it every time we need to get or set pixel and its color. That's why it is the slowest version, but the one where we can see alpha blending implementation most vividly.
 
 ### Ordinary version
 
-The next version ([ordinary version link](/alpha_blending_1.cpp)) works with arrays of pixels so it spends less time for addressing. Now we need to convert the result to rgba which sfml requires.
+The next version ([ordinary version link](/implementation_versions/alpha_blending_1.cpp)) works with arrays of pixels so it spends less time for addressing. Now we need to convert the result to rgba which sfml requires.
 
 ### Optimized version
 
-The last version ([optimized version link](/alpha_blending_2.cpp)) is logically like the previous one but accelerated with intrinsics usage in alpha blending calculation, which parallelling allows to treat 4 piels at the same time. 
+The last version ([optimized version link](/implementation_versions/alpha_blending_2.cpp)) is logically like the previous one but accelerated with intrinsics usage in alpha blending calculation, which parallelling allows to treat 4 piels at the same time. 
 
 
 **Note: only alpha blending calculations were optimized and only their work time was measured**
