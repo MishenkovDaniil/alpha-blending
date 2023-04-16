@@ -11,9 +11,10 @@
 #include <sys/stat.h>   //stat()
 #include <unistd.h>  //close(), getpagesize()
 
+// #define TIME_CHECK
 
 #ifdef TIME_CHECK
-static const size_t CALC_NUM = 100;
+static const size_t CALC_NUM = 100000;
 #else 
 static const size_t CALC_NUM = 1;
 #endif 
@@ -34,10 +35,10 @@ static const int OPEN_ERR = -1;
 static const int BMP_HEADER_SIZE = 0x36;
 
 static const char *WINDOW_HEADER = "alpha";
-static const char *back_img = "Table.bmp";
-static const char *front_img = "AskhatCat.bmp";
+static const char *back_img = "images&font/Table.bmp";
+static const char *front_img = "images&font/AskhatCat.bmp";
 
-static const char *fps_font_file = "fps_font.ttf";
+static const char *fps_font_file = "images&font/fps_font.ttf";
 
 void alpha_blending (void);
 void *create_file (const char *filename, size_t filesize);
@@ -77,12 +78,16 @@ void alpha_blending ()
         sf::Texture texture;
         sf::Sprite sprite;
         sf::Event event;
+        sf::Time elapsed_time;
+        
+        for (size_t calc_iter = 0; calc_iter < CALC_NUM; ++calc_iter)
+        {
+            sf::Clock clock;
+            alpha_blending_main (front + BMP_HEADER_SIZE, back, result_arr);
+            elapsed_time += clock.getElapsedTime ();
+        }
 
-        sf::Clock clock;
-        alpha_blending_main (front + BMP_HEADER_SIZE, back, result_arr);
-        sf::Time elapsed_time = clock.getElapsedTime ();
-
-        result.create (800, 600, (const sf::Uint8 *)result_arr);
+        result.create (BACK_WIDTH, BACK_HEIGHT, (const sf::Uint8 *)result_arr);
         texture.loadFromImage (result);
         sprite.setTexture (texture);
         

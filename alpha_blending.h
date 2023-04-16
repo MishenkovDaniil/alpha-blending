@@ -25,10 +25,10 @@ static const size_t MAX_TEXT_LEN = 20;
 static const int OPEN_ERR = -1;
 
 static const char *WINDOW_HEADER = "alpha";
-static const char *back_img = "Table.bmp";
-static const char *front_img = "AskhatCat.bmp";
+static const char *back_img = "images&font/Table.bmp";
+static const char *front_img = "images&font/AskhatCat.bmp";
 
-static const char *fps_font_file = "fps_font.ttf";
+static const char *fps_font_file = "images&font/fps_font.ttf";
 
 void alpha_blending (void);
 void alpha_blending_main (const sf::Image front_img, const sf::Image back_img, sf::Image *result);

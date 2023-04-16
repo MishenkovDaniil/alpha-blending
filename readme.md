@@ -2,7 +2,7 @@
 
 ***mixing .bmp images using alpha blending method optimizing***
 
-![](/alpha_blending_result.png?raw=true )
+![](/images&font/alpha_blending_result.png?raw=true )
 
 ## What is alpha blending?
 
