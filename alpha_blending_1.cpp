@@ -9,11 +9,8 @@
 #include <sys/mman.h>   //mmap()
 #include <fcntl.h>      //open()
 #include <sys/stat.h>   //stat()
-// #include <sys/types.h>
- #include <unistd.h>  //close(), getpagesize()
+#include <unistd.h>  //close(), getpagesize()
 
-// 424d 36 4c 1d 00 00 00 00 00 36 00 00 00 28 00
-// 0000 2003 0000 5802 0000 0100 2000 0000 0000 02f9 1500 120b 0000 120b 0000 0000 0000 0000 0000 
 
 #ifdef TIME_CHECK
 static const size_t CALC_NUM = 100;
@@ -62,25 +59,15 @@ void alpha_blending ()
 {
     sf::RenderWindow window (sf::VideoMode (WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_HEADER);
     
-    sf::Uint8 *result_arr = (sf::Uint8 *)calloc (600*800*4, sizeof (sf::Uint8));
+    sf::Uint8 *result_arr = (sf::Uint8 *)calloc (BACK_HEIGHT*BACK_WIDTH*4, sizeof (sf::Uint8));
     
-    const char *front = (const char *)read_file_rdonly (front_img);
+    const char *front      = (const char *)read_file_rdonly (front_img);
     const char *back_main  = (const char *)read_file_rdonly (back_img);
 
     char *back  = (char *)calloc (600*800*4, sizeof (char));
-    // char *back_start = back;
 
     copy_and_convert_bgr_bgra (back_main + BMP_HEADER_SIZE, back, BACK_HEIGHT * BACK_WIDTH);
-
     copy_and_convert_bgr_rgba ((const sf::Uint8 *)(back_main + BMP_HEADER_SIZE), result_arr, BACK_HEIGHT * BACK_WIDTH);
-
-    // for (int i = 0; i < BACK_WIDTH * BACK_HEIGHT; ++i)
-    // {
-    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 2 - i * 4] = (sf::Uint8) (back[i*4]);
-    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 3 - i * 4] = (sf::Uint8) (back[i*4 + 1]);
-    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 4  -i * 4] = (sf::Uint8) (back[i*4 + 2]);
-    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 1 - i * 4] = 0xff;
-    // }
 
     while (window.isOpen ())
     {
@@ -117,30 +104,6 @@ void alpha_blending ()
     free (result_arr);
     free (back);
 }
-
-void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num)
-{
-    for (int i = 0; i < pixel_num; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            *dst++ = *src++;
-        }
-        *dst++ = 0xff;
-    }
-}
-
-void copy_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t pixel_num)
-{
-    for (int i = 0; i < pixel_num; ++i)
-    {
-        dst[pixel_num * 4 - 2 - i * 4] = src[i*3];
-        dst[pixel_num * 4 - 3 - i * 4] = src[i*3 + 1];
-        dst[pixel_num * 4 - 4  -i * 4] = src[i*3 + 2];
-        dst[pixel_num * 4 - 1 - i * 4] = 0xff;
-    }
-}
-
 
 void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result)
 {
@@ -222,4 +185,27 @@ void load_fps_text (sf::Text *fps_text, sf::Font *font, const char *fps_file, sf
     
     fps_text->setString (string);
     fps_text->setFont (*font);
+}
+
+void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num)
+{
+    for (int i = 0; i < pixel_num; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            *dst++ = *src++;
+        }
+        *dst++ = 0xff;
+    }
+}
+
+void copy_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t pixel_num)
+{
+    for (int i = 0; i < pixel_num; ++i)
+    {
+        dst[pixel_num * 4 - 2 - i * 4] = src[i*3];
+        dst[pixel_num * 4 - 3 - i * 4] = src[i*3 + 1];
+        dst[pixel_num * 4 - 4  -i * 4] = src[i*3 + 2];
+        dst[pixel_num * 4 - 1 - i * 4] = 0xff;
+    }
 }
