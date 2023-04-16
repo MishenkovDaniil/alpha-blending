@@ -34,6 +34,7 @@ static const size_t HEIGHT_SHIFT  = (BACK_HEIGHT - FRONT_HEIGHT) / 2 - 16;
 static const size_t WIDTH_SHIFT   = (BACK_WIDTH  - FRONT_WIDTH ) / 2 - 80;
 
 static const int OPEN_ERR = -1;
+static const int BMP_HEADER_SIZE = 0x36;
 
 static const char *WINDOW_HEADER = "alpha";
 static const char *back_img = "Table.bmp";
@@ -47,6 +48,7 @@ void load_fps_text (sf::Text *fps_text, sf::Font *font, const char *fps_file, sf
 const void *read_file_rdonly (const char *filename);
 size_t get_file_size (const char *filename);
 void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result);
+void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num);
 
 int main ()
 {   
@@ -59,6 +61,43 @@ void alpha_blending ()
 {
     sf::RenderWindow window (sf::VideoMode (WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_HEADER);
     
+    sf::Uint8 *result_arr = (sf::Uint8 *)calloc (600*800*4, sizeof (sf::Uint8));
+    
+    const char *front = (const char *)read_file_rdonly (front_img);
+    const char *back_main  = (const char *)read_file_rdonly (back_img);
+
+    char *back  = (char *)calloc (600*800*4, sizeof (char));
+    // char *back_start = back;
+
+    copy_and_convert_bgr_bgra (back_main + BMP_HEADER_SIZE, back, BACK_HEIGHT * BACK_WIDTH);
+
+    // for (int i = 0; i < 0x36; ++i)
+    // {
+    //     *back++ = *back_main++;
+    // }
+    // for (int i = 0; i < 600*800; ++i)
+    // {
+    //     for (int j = 0; j < 3; ++j)
+    //     {
+    //         *back++ = *back_main++;
+    //     }
+    //     *back = 0xff;
+    //     back++;
+    // }
+    // back = back_start;
+
+    // back += BMP_HEADER_SIZE;
+    // front += BMP_HEADER_SIZE;
+
+    for (int i = 0; i < BACK_WIDTH * BACK_HEIGHT; ++i)
+    {
+        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 2 - i * 4] = (sf::Uint8) (back[i*4]);
+        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 3 - i * 4] = (sf::Uint8) (back[i*4 + 1]);
+        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 4  -i * 4] = (sf::Uint8) (back[i*4 + 2]);
+        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 1 - i * 4] = 0xff;
+        // back += 4;
+    }
+
     while (window.isOpen ())
     {
         sf::Image result;
@@ -68,31 +107,8 @@ void alpha_blending ()
         sf::Sprite sprite;
         sf::Event event;
 
-        const char *front = (const char *)read_file_rdonly (front_img);
-        const char *back_main  = (const char *)read_file_rdonly (back_img);
-
-        char *back  = (char *)calloc (600*800*4 + 54, sizeof (char));
-        char *back_start = back;
-
-        for (int i = 0; i < 0x36; ++i)
-        {
-            *back++ = *back_main++;
-        }
-        for (int i = 0; i < 600*800; ++i)
-        {
-            for (int j = 0; j < 3; ++j)
-            {
-                *back++ = *back_main++;
-            }
-            *back = 0xff;
-            back++;
-        }
-        back = back_start;
-
-        sf::Uint8 *result_arr = (sf::Uint8 *)calloc (600*800*4, sizeof (sf::Uint8));
-       
         sf::Clock clock;
-        alpha_blending_main (front, back, result_arr);
+        alpha_blending_main (front + BMP_HEADER_SIZE, back, result_arr);
         sf::Time elapsed_time = clock.getElapsedTime ();
 
         result.create (800, 600, (const sf::Uint8 *)result_arr);
@@ -108,42 +124,53 @@ void alpha_blending ()
         }
 
         load_fps_text (&fps_text, &fps_font, fps_font_file, elapsed_time, CALC_NUM);
-        free (result_arr);
-        free (back);
 
         window.clear ();
         window.draw (sprite);
         window.draw (fps_text);
         window.display ();
     }
+    free (result_arr);
+    free (back);
+}
+
+void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num)
+{
+    for (int i = 0; i < pixel_num; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            *dst++ = *src++;
+        }
+        *dst++ = 0xff;
+    }
 }
 
 void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result)
 {
-    back += 0x36;
-    front += 0x36;
+    back += (BACK_HEIGHT - FRONT_HEIGHT - HEIGHT_SHIFT) * BACK_WIDTH * 4;
 
-    for (int i = 0; i < 600*800; ++i)
+    for (int y = HEIGHT_SHIFT + FRONT_HEIGHT - 1; y >= HEIGHT_SHIFT; --y)
     {
-        result[800*600*4 - 2 - i*4] = (sf::Uint8) (back[0]);
-        result[800*600*4 - 3 - i*4] = (sf::Uint8) (back[1]);
-        result[800*600*4 - 4  -i*4] = (sf::Uint8) (back[2]);
-        result[800*600*4 - 1 - i*4] = 0xff;
-    
-        back += 4;
-    }
+        back += (BACK_WIDTH - FRONT_WIDTH - WIDTH_SHIFT) * 4;
 
-    for (int y = HEIGHT_SHIFT + FRONT_HEIGHT; y > HEIGHT_SHIFT; --y)
-    {
-        for (int x = WIDTH_SHIFT; x < WIDTH_SHIFT + FRONT_WIDTH; ++x)
+        for (int x = WIDTH_SHIFT + FRONT_WIDTH - 1; x >= WIDTH_SHIFT; --x)
         {
-            char fr_alpha = front[3];
+            unsigned char fr_alpha = front[3];
+            unsigned char bk_alpha = 0xff - fr_alpha;
+
             int first_pixel = (y * BACK_WIDTH + x) * 4;
-            result[first_pixel + 2] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 2] * (unsigned char)(255 - fr_alpha)) >> 8;
-            result[first_pixel + 1] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 1] * (unsigned char)(255 - fr_alpha)) >> 8;
-            result[first_pixel] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel] * (unsigned char)(255 - fr_alpha)) >> 8;
+
+            result[first_pixel + 2] = ((unsigned char)*front++ * fr_alpha + (unsigned char)*back++ * bk_alpha) >> 8;
+            result[first_pixel + 1] = ((unsigned char)*front++ * fr_alpha + (unsigned char)*back++ * bk_alpha) >> 8;
+            result[first_pixel]     = ((unsigned char)*front++ * fr_alpha + (unsigned char)*back++ * bk_alpha) >> 8;
+            //result[first_pixel + 2] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 2] * (unsigned char)(255 - fr_alpha)) >> 8;
+            //result[first_pixel + 1] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 1] * (unsigned char)(255 - fr_alpha)) >> 8;
+            // result[first_pixel] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 2] * (unsigned char)(255 - fr_alpha)) >> 8;
             ++front;
+            ++back;
         }
+        back += WIDTH_SHIFT * 4;
     }
 }
 
