@@ -49,6 +49,7 @@ const void *read_file_rdonly (const char *filename);
 size_t get_file_size (const char *filename);
 void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result);
 void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num);
+void copy_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t pixel_num);
 
 int main ()
 {   
@@ -71,32 +72,15 @@ void alpha_blending ()
 
     copy_and_convert_bgr_bgra (back_main + BMP_HEADER_SIZE, back, BACK_HEIGHT * BACK_WIDTH);
 
-    // for (int i = 0; i < 0x36; ++i)
-    // {
-    //     *back++ = *back_main++;
-    // }
-    // for (int i = 0; i < 600*800; ++i)
-    // {
-    //     for (int j = 0; j < 3; ++j)
-    //     {
-    //         *back++ = *back_main++;
-    //     }
-    //     *back = 0xff;
-    //     back++;
-    // }
-    // back = back_start;
+    copy_and_convert_bgr_rgba ((const sf::Uint8 *)(back_main + BMP_HEADER_SIZE), result_arr, BACK_HEIGHT * BACK_WIDTH);
 
-    // back += BMP_HEADER_SIZE;
-    // front += BMP_HEADER_SIZE;
-
-    for (int i = 0; i < BACK_WIDTH * BACK_HEIGHT; ++i)
-    {
-        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 2 - i * 4] = (sf::Uint8) (back[i*4]);
-        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 3 - i * 4] = (sf::Uint8) (back[i*4 + 1]);
-        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 4  -i * 4] = (sf::Uint8) (back[i*4 + 2]);
-        result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 1 - i * 4] = 0xff;
-        // back += 4;
-    }
+    // for (int i = 0; i < BACK_WIDTH * BACK_HEIGHT; ++i)
+    // {
+    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 2 - i * 4] = (sf::Uint8) (back[i*4]);
+    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 3 - i * 4] = (sf::Uint8) (back[i*4 + 1]);
+    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 4  -i * 4] = (sf::Uint8) (back[i*4 + 2]);
+    //     result_arr[BACK_WIDTH * BACK_HEIGHT * 4 - 1 - i * 4] = 0xff;
+    // }
 
     while (window.isOpen ())
     {
@@ -146,6 +130,18 @@ void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num)
     }
 }
 
+void copy_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t pixel_num)
+{
+    for (int i = 0; i < pixel_num; ++i)
+    {
+        dst[pixel_num * 4 - 2 - i * 4] = src[i*3];
+        dst[pixel_num * 4 - 3 - i * 4] = src[i*3 + 1];
+        dst[pixel_num * 4 - 4  -i * 4] = src[i*3 + 2];
+        dst[pixel_num * 4 - 1 - i * 4] = 0xff;
+    }
+}
+
+
 void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result)
 {
     back += (BACK_HEIGHT - FRONT_HEIGHT - HEIGHT_SHIFT) * BACK_WIDTH * 4;
@@ -164,134 +160,13 @@ void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result
             result[first_pixel + 2] = ((unsigned char)*front++ * fr_alpha + (unsigned char)*back++ * bk_alpha) >> 8;
             result[first_pixel + 1] = ((unsigned char)*front++ * fr_alpha + (unsigned char)*back++ * bk_alpha) >> 8;
             result[first_pixel]     = ((unsigned char)*front++ * fr_alpha + (unsigned char)*back++ * bk_alpha) >> 8;
-            //result[first_pixel + 2] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 2] * (unsigned char)(255 - fr_alpha)) >> 8;
-            //result[first_pixel + 1] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 1] * (unsigned char)(255 - fr_alpha)) >> 8;
-            // result[first_pixel] = ((unsigned char)*front++ * (unsigned char)fr_alpha + (unsigned char)result[first_pixel + 2] * (unsigned char)(255 - fr_alpha)) >> 8;
+
             ++front;
             ++back;
         }
         back += WIDTH_SHIFT * 4;
     }
 }
-
-// void alpha_blending_main (const char *front, const char *back, char *result)
-// {
-//     result[0] = 0x42;
-//     result[1] = 0x4d;
-//     result[2] = 0x38;
-//     result[3] = 0x4c;
-//     result[4] = 0x1d;
-//     result[5] = 0x00;
-//     result[6] = 0x00;
-//     result[7] = 0x00;
-//     result[8] = 0x00;
-//     result[9] = 0x00;
-//     result[10] = 0x36;
-//     result[11] = 0x00;
-//     result[12] = 0x00;
-//     result[13] = 0x00;
-//     result[14] = 0x28;
-//     result[15] = 0x00;
-//     result[16] = 0x00;
-//     result[17] = 0x00;
-//     result[18] = 0x20;
-//     result[19] = 0x03;
-//     result[20] = 0x00;
-//     result[21] = 0x00;
-//     result[22] = 0x58;
-//     result[23] = 0x02;
-//     result[24] = 0x00;
-//     result[25] = 0x00;
-//     result[26] = 0x01;
-//     result[27] = 0x00;
-//     result[28] = 0x20;
-//     result[29] = 0x00;
-//     result[30] = 0x00;
-//     result[31] = 0x00;
-//     result[32] = 0x00;
-//     result[33] = 0x00;
-//     result[34] = 0x02;
-//     result[35] = 0xf9;
-//     result[36] = 0x15;
-//     result[37] = 0x00;
-//     result[38] = 0x12;
-//     result[39] = 0x0b;
-//     result[40] = 0x00;
-//     result[41] = 0x00;
-//     result[42] = 0x12;
-//     result[43] = 0x0b;
-//     result[44] = 0x00;
-//     result[45] = 0x00;
-//     result[46] = 0x00;
-//     result[47] = 0x00;
-//     result[48] = 0x00;
-//     result[49] = 0x00;
-//     result[50] = 0x00;
-//     result[51] = 0x00;
-//     result[52] = 0x00;
-//     result[53] = 0x00;
-//     result += 54;
-//     back   += 54;
-//     front  += 54; 
-//     // for (int i = 0; i < 54; ++i)
-//     // {
-//     //     *result++ = *front++;
-//     //     back++;
-//     // }
-
-//     for (int y = 0; y <  HEIGHT_SHIFT; ++y)
-//     {
-//         for (int x = 0; x < BACK_WIDTH; ++x)
-//         {
-//             for (int i = 0; i < 4; ++i)
-//             {
-//                 *result++ = *back++;
-//             }
-//         }
-//     }
-
-//     for (int y = HEIGHT_SHIFT; y < HEIGHT_SHIFT + FRONT_HEIGHT; ++y)
-//     {
-//         int x = 0;
-//         for (;x < WIDTH_SHIFT; ++x)
-//         {
-//             for (int i = 0; i < 4; ++i)
-//             {
-//                 *result++ = *back++;
-//             }
-//         }
-//         for ( ;x < WIDTH_SHIFT + FRONT_WIDTH; ++x)
-//         {
-//             unsigned int fr_alpha = *(front + 3);
-//             for (int i = 0; i < 4; ++i)
-//             {
-//                 (*(result + i)) = (char)(((unsigned int )((unsigned int)(*(front + i)) * fr_alpha + (unsigned int)(*(back + i)) * (unsigned int)(255 - fr_alpha))) >> 8);
-//             }
-//             // *(result + 3) = 0xff;
-//             result += 4;
-//             front += 4;
-//             back += 4;
-//         }
-//         for (; x < BACK_WIDTH; ++x)
-//         {
-//             for (int i = 0; i < 4; ++i)
-//             {
-//                 *result++ = *back++;
-//             }
-//         }
-//     }
-
-//     for (int y = HEIGHT_SHIFT + FRONT_HEIGHT; y < BACK_HEIGHT; ++y)
-//     {
-//         for (int x = 0; x < BACK_WIDTH; ++x)
-//         {
-//             for (int i = 0; i < 4; ++i)
-//             {
-//                 *result++ = *back++;
-//             }
-//         }
-//     }
-// }
 
 const void *read_file_rdonly (const char *filename)
 {
@@ -323,34 +198,6 @@ const void *read_file_rdonly (const char *filename)
     return buffer;
 }
 
-// void *create_file (const char *filename, size_t filesize)
-// {
-//     int file_descr = open (filename, O_RDWR);
-//     if (file_descr == OPEN_ERR)
-//     {
-//         perror ("open() failed:");
-//         return nullptr;
-//     }
-//     char *ggg = (char *)calloc (filesize, sizeof (char));
-//     write (file_descr, ggg, filesize);
-//     free (ggg);
-
-//     void *buffer = mmap (nullptr, filesize, PROT_WRITE, MAP_SHARED, file_descr, 0);
-
-//     if (buffer == MAP_FAILED)
-//     {
-//         perror ("mmap() failed.\n");
-//     }
-
-//     if (close (file_descr) == -1)
-//     {
-//         printf ("close() failed, file \"%s\".\n", filename);
-//         return nullptr;
-//     }
-
-//     return buffer;
-// }
-
 size_t get_file_size (const char *filename)
 {
     struct stat buf = {};
@@ -376,33 +223,3 @@ void load_fps_text (sf::Text *fps_text, sf::Font *font, const char *fps_file, sf
     fps_text->setString (string);
     fps_text->setFont (*font);
 }
-
-
-// read arrays of 2 images
-// fr = [a3, r3, g3, b3, ..., a0, r0, g0, b0] -->
-// FR = [- - - - - - - -, a3, r3, g3, b3, ..., b2]-->
-// fr = [- a1 - r1, - g1 - b1, ...] --}
-//                                      -->
-// FR = [- a3 - r3, - g3 - b3, ...] --}
-// a = [- a1 - a1, - a1 - a1, - a0 - a0, - a0 - a0] --}
-//                                                      -->
-// A = [- a3 - a3, - a3 - a3, - a2 - a2, - a2 - a2] --}
-// shuffle a (with moveA mask) --}
-//                                  -->
-// shuffle b (with moveA mask) --}
-// fr *= a (back *= (255 -a))   --}
-//                                  -->
-// FR *= A                      --}
-// ... 
-// sum = [- - - -, - - - -, A1 R1 G1 B1, ...] --}
-//                                                  -->
-// SUM = [- - - -, - - - -, A3 R3 G3 B3, ...] --}
-// COLOR = [A3 R3 G3 B3, ..., A0 R0 G0 B0]
-
-
-// 
-// 
-// 
-// color = (color_front * a + color_b * (255 - a) ) /255
-// put colour in new array
-// print new image
