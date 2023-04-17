@@ -7,6 +7,6 @@ naive:  implementation_versions/alpha_blending_0.cpp
 not_optimized: implementation_versions/alpha_blending_1.cpp	
 		$(CC) $(Flags) implementation_versions/alpha_blending_1.cpp -o optimized-1
 		./optimized-1
-optimized: alpha_blending_2.cpp	
+optimized: implementation_versions/alpha_blending_2.cpp	
 		$(CC) $(Flags) implementation_versions/alpha_blending_2.cpp -o optimized-2
 		./optimized-2
