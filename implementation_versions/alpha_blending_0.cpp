@@ -3,7 +3,6 @@
 
 #define TIME_CHECK
 
-#include "config.h"
 #include "alpha_blending.h"
 
 int main ()
