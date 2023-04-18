@@ -50,5 +50,5 @@ Some more notes:
 
 ## Conclusion
 
-Intrinsics including accelerates work in parts where we need to treat identically a lot of independent values at the same time. Practically, treating 4 pixels instead of 1 with XXM register treating (by SSE instructions for XMM - 128 bit values) we received acceleration in 3 times (comparing to not optimized). Obviously, we cannot get 4 time acceleration considering side processes.
-Similarly, using avx-256 or avx-512 instructions would accelarate calculations in ~7 and ~15 times.
+Intrinsics including accelerates work in parts where we need to treat identically a lot of independent values at the same time. Practically, treating 4 pixels instead of 1 with XXM register treating (by SSE instructions for XMM which are 128 bit values) we received acceleration in 3 times (comparing to not optimized). Obviously, we cannot get 4 time acceleration considering side processes.
+Similarly, using avx-256 or avx-512 instructions would accelarate calculations in ~6 and ~12 times.
