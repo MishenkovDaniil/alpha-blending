@@ -8,7 +8,7 @@
 
 Alpha blending - is a method of mixing two pictures by using alpha component of foreground image as a mask.
 There is a formula of mixed picture pixel color receiving: 
-$$ mixed.color = foreground.color * foreground_alpha + background.color * (1 - foreground_alpha),$$
+$$mixed.color = foreground.color \cdot foreground.alpha + background.color \cdot (1 - foreground.alpha),$$
 where foreground_alpha is a mask value which varies from 0 to 1.
 
 
@@ -44,7 +44,7 @@ Some more notes:
 
 | VERSION                   | FPS   | BOOST (%) |
 | ------------------------- | ----- | --------- |
-| naive                     | 0     |   -0      |
+| naive                     | 484   |    -68    |
 | not_optimized             | 1495  |    +0     |            
 | optimized                 | 4415  |    +295   |
 
