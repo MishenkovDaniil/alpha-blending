@@ -47,7 +47,7 @@ const void *read_file_rdonly (const char *filename);
 size_t get_file_size (const char *filename);
 void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result);
 void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num);
-void copy_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t pixel_num);
+void revert_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t height, size_t width);
 
 int main ()
 {   
@@ -68,7 +68,7 @@ void alpha_blending ()
     char *back  = (char *)calloc (600*800*4, sizeof (char));
 
     copy_and_convert_bgr_bgra (back_main + BMP_HEADER_SIZE, back, BACK_HEIGHT * BACK_WIDTH);
-    copy_and_convert_bgr_rgba ((const sf::Uint8 *)(back_main + BMP_HEADER_SIZE), result_arr, BACK_HEIGHT * BACK_WIDTH);
+    revert_and_convert_bgr_rgba ((const sf::Uint8 *)(back_main + BMP_HEADER_SIZE), result_arr, BACK_HEIGHT, BACK_WIDTH);
 
     while (window.isOpen ())
     {
@@ -116,9 +116,9 @@ void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result
 
     for (int y = HEIGHT_SHIFT + FRONT_HEIGHT - 1; y >= HEIGHT_SHIFT; --y)
     {
-        back += (BACK_WIDTH - FRONT_WIDTH - WIDTH_SHIFT) * 4;
+        back += WIDTH_SHIFT * 4;//(BACK_WIDTH - FRONT_WIDTH - WIDTH_SHIFT) * 4;
 
-        for (int x = WIDTH_SHIFT + FRONT_WIDTH - 1; x >= WIDTH_SHIFT; --x)
+        for (int x = WIDTH_SHIFT; x < WIDTH_SHIFT + FRONT_WIDTH; ++x)
         {
             unsigned char fr_alpha = front[3];
             unsigned char bk_alpha = 0xff - fr_alpha;
@@ -132,7 +132,7 @@ void alpha_blending_main (const char *front, const char *back, sf::Uint8 *result
             ++front;
             ++back;
         }
-        back += WIDTH_SHIFT * 4;
+        back += (BACK_WIDTH - FRONT_WIDTH - WIDTH_SHIFT) * 4;//WIDTH_SHIFT * 4;
     }
 }
 
@@ -204,13 +204,22 @@ void copy_and_convert_bgr_bgra (const char *src, char *dst, size_t pixel_num)
     }
 }
 
-void copy_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t pixel_num)
+void revert_and_convert_bgr_rgba (const sf::Uint8 *src, sf::Uint8 *dst, size_t height, size_t width)
 {
-    for (int i = 0; i < pixel_num; ++i)
+    for (int y = 0; y < height; ++y)
     {
-        dst[pixel_num * 4 - 2 - i * 4] = src[i*3];
-        dst[pixel_num * 4 - 3 - i * 4] = src[i*3 + 1];
-        dst[pixel_num * 4 - 4  -i * 4] = src[i*3 + 2];
-        dst[pixel_num * 4 - 1 - i * 4] = 0xff;
-    }
+        size_t src_idx = y * width * 3;
+        size_t dst_idx = (height - y - 1) * width * 4;
+
+        for (int x = 0; x < width; ++x)
+        {
+            size_t cur_src_idx = src_idx + x*3;
+            size_t cur_dst_idx = (height - y - 1) * width * 4 + x * 4;
+
+            dst[cur_dst_idx + 2] = src[cur_src_idx++];
+            dst[cur_dst_idx + 1] = src[cur_src_idx++];
+            dst[cur_dst_idx + 0] = src[cur_src_idx];
+            dst[cur_dst_idx + 3] = 0xff;
+        }
+    } 
 }
