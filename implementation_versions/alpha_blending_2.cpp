@@ -10,7 +10,7 @@
 #include <xmmintrin.h>
 #include <SFML/Graphics.hpp>
 
-#define TIME_CHECK
+// #define TIME_CHECK
 
 #ifdef TIME_CHECK
 static const size_t CALC_NUM = 100000;
@@ -129,7 +129,7 @@ void alpha_blending ()
 
         window.clear ();
         window.draw (sprite);
-        window.draw (fps_text);
+        // window.draw (fps_text);
         window.display ();
     }
 
@@ -211,7 +211,7 @@ void revert_and_convert_bgr_rgba (const char *bgr_img, char *rgba_img)
     
     for (int y = BACK_HEIGHT - 1; y >= 0; --y)
     {
-        for (int x = BACK_WIDTH - 1; x >= 0; --x)               /// BGR colors into RGBA colors
+        for (int x = 0; x < BACK_WIDTH; ++x)               /// BGR colors into RGBA colors
         {
             rgba_img[(y*BACK_WIDTH + x) * 4 + 2] = *bgr_img++; 
             rgba_img[(y*BACK_WIDTH + x) * 4 + 1] = *bgr_img++; 
@@ -227,7 +227,7 @@ void revert_and_convert_bgra_rgba (const char *src, char *dst, size_t height, si
     
     for (int y = height - 1; y >= 0; --y)
     {
-        for (int x = width - 1; x >= 0; --x)
+        for (int x = 0; x < width; ++x)
         {
             dst[(y*width + x) * 4 + 2] = *src++; 
             dst[(y*width + x) * 4 + 1] = *src++; 
