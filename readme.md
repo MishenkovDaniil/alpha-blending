@@ -1,54 +1,59 @@
-# Alpha Blending 
+# Оптимизация работы Альфа-смешения
+
+***целью данной работы является оптимизация***
 
 ***mixing .bmp images using alpha blending method optimizing***
 
-![](/images&font/alpha_blending_result.png?raw=true )
+![](/images&font/alpha_blending_result.png?raw=true "Пример альфа-смешения изображений теннисного стола и кота")
 
-## What is alpha blending?
+## Что такое альфа-смешение
 
-Alpha blending - is a method of mixing two pictures by using alpha component of foreground image as a mask.
-There is a formula of mixed picture pixel color receiving: 
+Альфа-смешение - это метод наложения одного изображения на другое, использующее альфа-канал изображения на переднем плане как маску
+(альфа-канал определяет степень прозрачности пикселя).
+
+Ниже представлена формула, по которой производились вычисления цвета:
 $$mixed.color = foreground.color \cdot foreground.alpha + background.color \cdot (1 - foreground.alpha),$$
-where foreground_alpha is a mask value which varies from 0 to 1.
+где foreground_alpha - значение в интервале от 0 до 1, прямо пропорционально зависящее от значения альфа-канала.
 
 
-## Stages
+## Стадии работы
 
-Every version follows the next structure: 
-- receiving background and foreground images;
-- making template for a mixed image consisting of background pixels;
-- converting pixels in needed part of mixed picture;
-- converting images in desired format (from BGRA (.bmp) to RGBA (SFML)) if needed;
+Для анализа времени работы программы в том или ином случае было написано несколько версий программы, осузествляющей альфа-смешение.
 
-### Naive version
+Каждая версия придерживается следующей структуры:
+1. Получение начальных изображений.
+2. Создание заготовки под изображение - результат выполнения программы, представляющей собой копию изображения на заднем плане.
+3. Конвертирование пикселей в нужной части изображения по формуле выше.
+4. Конвертирование полученного изображения в нужный формат, если необходимо.
 
-Naive version ([naive version link](/implementation_versions/alpha_blending_0.cpp)) works with sfml structure Image, addressing to it every time we need to get or set pixel and its color. That's why it is the slowest version, but the one where we can see alpha blending implementation most vividly.
+### Наивная версия
 
-### Ordinary version
+Наивная версия ([naive version link](/implementation_versions/alpha_blending_0.cpp)) работает с SFML структурой Image и обращается к ней каждый раз, когда необходимо получить или загрузить пиксель. Это значительно сокращает время работы алгоритма, но простота кода программы позволяет увидеть алгоритм реализации альфа-смешения наиболее ярко.
 
-The next version ([ordinary version link](/implementation_versions/alpha_blending_1.cpp)) works with arrays of pixels so it spends less time for addressing. Now we need to convert the result to rgba which sfml requires.
+### Обычная версия
 
-### Optimized version
+Эта версия ([ordinary version link](/implementation_versions/alpha_blending_1.cpp)) работает с массивами пикселей, что позволяет обращаться к ним гораздо быстрее, чем в случае наивной версии. Также следует отметить, что теперь необходимо конвертировать изображения из BGRA формата (формат .bmp файлов) в RGBA формат (формат, требуемый для создания изображения в SFML).
 
-The last version ([optimized version link](/implementation_versions/alpha_blending_2.cpp)) is logically like the previous one but accelerated with intrinsics usage in alpha blending calculation, which parallelling allows to treat 4 piels at the same time. 
+### Оптимизированная версия
 
+Оптимизированная версия ([optimized version link](/implementation_versions/alpha_blending_2.cpp)) представляет собой предыдущую версию, в которой вычисления с пикселями проводятся с использованием интринсик-функции, что позволяет вычислить несколько пикселей итогового изображения одновременно. Мы используем SSE инструкции для работы с 128-битными XMM регистрами, что позволяет вычислять 4 пикселя за одну итерацию.
 
-**Note: only alpha blending calculations were optimized and only their work time was measured**
+**Замечание: в программе альфа-смешения были оптимизированы только преобразования, преобразующие цвет итогового пикселя, и мы замеряли только их время работы**
 
-## Work time 
+## Время работы
 
-Some more notes:
-- working fps was measured excluding rendering and calculated as 1/work_time;
-- average time was measured with 10000 iterations in naive version and 100000 in others;
-- all versions work with -o3 and -mavx2 flags and use SSE instructions;
+Некоторые важные замечания:
+- рабочий фпс измерялся без учета отрисовки и вычислялся как обратная величина ко времени работы (в секундах)
+- среднее время измерялось посредством многократного запуска программы и усреднения результата (10000 запусков в случае наивной версии и 100000 в других)
+- все версии запускались с флагом оптимизации -O3
 
-| VERSION                   | FPS   | BOOST (%) |
-| ------------------------- | ----- | --------- |
-| naive                     | 484   |    -68    |
-| not_optimized             | 1495  |    +0     |            
-| optimized                 | 4415  |    +295   |
+| Версия                    | ФПС   | Коэффициент ускорения |
+| ------------------------- | ----- | --------------------- |
+| naive                     | 484   |    0.32               |
+| not_optimized             | 1495  |    0                  |    
+| optimized                 | 4415  |    3.95               |
 
-## Conclusion
+## Выводы
 
-Intrinsics including accelerates work in parts where we need to treat identically a lot of independent values at the same time. Practically, treating 4 pixels instead of 1 with XXM register treating (by SSE instructions for XMM which are 128 bit values) we received acceleration in 3 times (comparing to not optimized). Obviously, we cannot get 4 time acceleration considering side processes.
-Similarly, using avx-256 or avx-512 instructions would accelarate calculations in ~6 and ~12 times.
+- Использование интринсик-функций ускоряет работу программы в тех местах, где необходимо проводить одинаковые действия с несколькими независимыми обьектами.
+- На практике, накладные расходы не позволяют достигнуть абсолютного ускорения работы программы: обрабатывая в 4 раза больше пикселей за одну итерацию с помощью XMM регистров мы получили ускорение только в 3 раза (в сравнении с обычной версией). 
