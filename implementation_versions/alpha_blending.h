@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifdef TIME_CHECK
-static const size_t CALC_NUM = 10000;
+static const size_t CALC_NUM = 100000;
 #else 
 static const size_t CALC_NUM = 1;
 #endif 

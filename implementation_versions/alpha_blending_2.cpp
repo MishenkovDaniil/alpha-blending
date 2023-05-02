@@ -10,10 +10,10 @@
 #include <xmmintrin.h>
 #include <SFML/Graphics.hpp>
 
-// #define TIME_CHECK
+#define TIME_CHECK
 
 #include "optimized.h"
-
+#include "../../mean_square_deviation/msd.h"
 
 int main ()
 {   
@@ -53,12 +53,19 @@ void alpha_blending ()
         sf::Sprite sprite;
         sf::Event event;
         sf::Time elapsed_time;
+        sf::Time elapsed_time_1;
+
+        double values[CALC_NUM] = {0};
 
         for (size_t calc_iter = 0; calc_iter < CALC_NUM; ++calc_iter)
         {
             sf::Clock clock;
+            
             alpha_blending_main (front, back, result_arr);
-            elapsed_time += clock.getElapsedTime ();
+
+            elapsed_time_1 = clock.getElapsedTime ();
+            elapsed_time += elapsed_time_1;
+            values[calc_iter] = (double)1 / (double)elapsed_time_1.asSeconds ();
         }
         
         result.create (BACK_WIDTH, BACK_HEIGHT, (const sf::Uint8 *)result_arr);
@@ -75,9 +82,12 @@ void alpha_blending ()
 
         load_fps_text (&fps_text, &fps_font, fps_font_file, elapsed_time, CALC_NUM);
 
+        double avg = (double) 1 / ((double)elapsed_time.asSeconds () / CALC_NUM);
+        printf ("%lf\ng", msd (values, CALC_NUM, avg));
+
         window.clear ();
         window.draw (sprite);
-        // window.draw (fps_text);
+        window.draw (fps_text);
         window.display ();
     }
 

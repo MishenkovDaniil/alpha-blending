@@ -4,7 +4,7 @@
 #define TIME_CHECK
 
 #include "alpha_blending.h"
-
+#include "../../mean_square_deviation/msd.h"
 int main ()
 {   
     alpha_blending ();
@@ -31,20 +31,29 @@ void alpha_blending ()
         sf::Sprite sprite;
         sf::Event event;
         sf::Time elapsed_time;
+        sf::Time elapsed_time_1;
 
         result.loadFromFile (back_img);
+        double values[CALC_NUM] = {0};
 
         for (size_t calc_iter = 0; calc_iter < CALC_NUM; ++calc_iter)
         {
             sf::Clock clock;
+            
             alpha_blending_main (askhat, table, &result);
-            elapsed_time += clock.getElapsedTime ();
+
+            elapsed_time_1 = clock.getElapsedTime ();
+            elapsed_time += elapsed_time_1;
+            values[calc_iter] = (double)1 / (double)elapsed_time_1.asSeconds ();
         }
 
         texture.loadFromImage (result);
         sprite.setTexture (texture);
 
         load_fps_text (&fps_text, &fps_font, fps_font_file, elapsed_time, CALC_NUM);
+        
+        double avg = (double) 1 / ((double)elapsed_time.asSeconds () / CALC_NUM);
+        printf ("%lf\ng", msd (values, CALC_NUM, avg));
         
         while (window.pollEvent (event))
         {
