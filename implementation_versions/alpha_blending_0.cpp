@@ -4,7 +4,7 @@
 #define TIME_CHECK
 
 #include "alpha_blending.h"
-#include "../../mean_square_deviation/msd.h"
+#include "../mean_square_deviation/msd.h"
 int main ()
 {   
     alpha_blending ();
@@ -39,7 +39,7 @@ void alpha_blending ()
         for (size_t calc_iter = 0; calc_iter < CALC_NUM; ++calc_iter)
         {
             sf::Clock clock;
-            
+
             alpha_blending_main (askhat, table, &result);
 
             elapsed_time_1 = clock.getElapsedTime ();

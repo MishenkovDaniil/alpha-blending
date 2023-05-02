@@ -1,7 +1,7 @@
 #define TIME_CHECK
 
 #include "not_optimized.h"
-#include "../../mean_square_deviation/msd.h"
+#include "../mean_square_deviation/msd.h"
 
 int main ()
 {   
@@ -40,7 +40,7 @@ void alpha_blending ()
         for (size_t calc_iter = 0; calc_iter < CALC_NUM; ++calc_iter)
         {
             sf::Clock clock;
-            
+
             alpha_blending_main (front + BMP_HEADER_SIZE, back, result_arr);
 
             elapsed_time_1 = clock.getElapsedTime ();
