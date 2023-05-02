@@ -13,7 +13,7 @@
 #define TIME_CHECK
 
 #include "optimized.h"
-#include "../mean_square_deviation/msd.h"
+#include "../root_mean_square/rms.h"
 
 int main ()
 {   
@@ -83,7 +83,7 @@ void alpha_blending ()
         load_fps_text (&fps_text, &fps_font, fps_font_file, elapsed_time, CALC_NUM);
 
         double avg = (double) 1 / ((double)elapsed_time.asSeconds () / CALC_NUM);
-        printf ("%lf\ng", msd (values, CALC_NUM, avg));
+        printf ("%lf\ng", rms (values, CALC_NUM, avg));
 
         window.clear ();
         window.draw (sprite);
